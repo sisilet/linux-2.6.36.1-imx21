@@ -144,12 +144,12 @@ static unsigned int mx21ads_pins[] = {
 
 /* ADS's NOR flash: 2x AM29BDS128HE9VKI on 32-bit bus */
 static struct physmap_flash_data mx21ads_flash_data = {
-	.width = 4,
+	.width = 2,
 };
 
 static struct resource mx21ads_flash_resource = {
 	.start = MX21_CS0_BASE_ADDR,
-	.end = MX21_CS0_BASE_ADDR + 0x02000000 - 1,
+	.end = MX21_CS0_BASE_ADDR + 0x01000000 - 1,
 	.flags = IORESOURCE_MEM,
 };
 
@@ -201,14 +201,14 @@ static struct imx_fb_videomode mx21ads_modes[] = {
 			.xres		= 240,
 			.yres		= 320,
 			.pixclock	= 188679, /* in ps (5.3MHz) */
-			.hsync_len	= 2,
-			.left_margin	= 6,
-			.right_margin	= 16,
+			.hsync_len	= 0x3e,
+			.left_margin	= 0x12,
+			.right_margin	= 0x39,
 			.vsync_len	= 1,
-			.upper_margin	= 8,
-			.lower_margin	= 10,
+			.upper_margin	= 0,
+			.lower_margin	= 3,
 		},
-		.pcr		= 0xfb108bc7,
+		.pcr		= 0xfae00087,
 		.bpp		= 16,
 	},
 };
