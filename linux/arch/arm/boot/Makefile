@@ -56,6 +56,7 @@ $(obj)/compressed/vmlinux: $(obj)/Image FORCE
 $(obj)/zImage:	$(obj)/compressed/vmlinux FORCE
 	$(call if_changed,objcopy)
 	@echo '  Kernel: $@ is ready'
+	cp arch/arm/boot/zImage /home/tftpboot/zImage-2.6.36.1
 
 endif
 

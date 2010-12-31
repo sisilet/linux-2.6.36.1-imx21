@@ -137,6 +137,7 @@ start:
 		.word	_edata			@ zImage end address
 1:		mov	r7, r1			@ save architecture ID
 		mov	r8, r2			@ save atags pointer
+		mov	r10, r0			@ save cmd line buffer address
 
 #ifndef __ARM_ARCH_2__
 		/*
@@ -169,6 +170,75 @@ not_angel:
 		 */
 
 		.text
+
+/* start of atag */
+
+		ldr	r2, =0xc0000000	/* put the tags at the bottom of SDRAM */
+		mov	r8, r2		/* save the correct atags pointer */
+	
+		ldr	r1, =5
+		stmia	r2!, {r1}
+		ldr	r1, =0x54410001	/* ATAG_CORE */
+		stmia	r2!, {r1}
+
+		ldr	r1, =0		/* flags */
+		stmia	r2!, {r1}
+		ldr	r1, =4096	/* pagesize */
+		stmia	r2!, {r1}
+		ldr	r1, =0		/* rootdev (usually overridden on cmdline) */
+		stmia	r2!, {r1}
+	
+		ldr	r1, =4
+		stmia	r2!, {r1}
+		ldr	r1, =0x54410002	/* ATAG_MEM */
+		stmia	r2!, {r1}
+
+		ldr	r1, =0x2000000	/* size */
+		ldr	r3, =0xc000000	/* start */
+
+		stmia	r2!, {r1}
+		stmia	r2!, {r3}
+
+		/* save some room for cmdline length */
+		mov	r4, r2
+		add	r2, r2, #4
+	
+		ldr	r1, =0x54410009	/* ATAG_CMDLINE */
+		stmia	r2!, {r1}
+
+		/* copy over the command line */
+		/* (if one wasn't provided, we'll likely crash here) */
+
+1:		ldmia	r10!, {r1}
+		stmia	r2!, {r1}
+		
+		/* look for the null terminator */
+		ands	r5, r1, #0x000000ff
+		beq	1f	
+		ands	r5, r1, #0x0000ff00
+		beq	1f	
+		ands	r5, r1, #0x00ff0000
+		beq	1f	
+		ands	r5, r1, #0xff000000
+		beq	1f
+
+		b	1b
+	
+		/* put the word count into the ATAG_CMDLINE */
+1:		sub	r5, r2, r4
+		mov	r5, r5, lsr #2
+		stmia	r4, {r5}
+
+		/* terminate */
+		ldr	r1, =0 /* ATAG_NONE */
+		stmia	r2!, {r1}
+		stmia	r2!, {r1}
+/* end of atag */
+
+/*
+		ldr	r0, =0xc0000000	
+		bl	memdump		
+*/
 		adr	r0, LC0
 		ldmia	r0, {r1, r2, r3, r5, r6, r11, ip}
 		ldr	sp, [r0, #28]
